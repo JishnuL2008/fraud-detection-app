@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Common Denominator | Live Fraud Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --muted:#94a3b8;
+          --low:#22c55e; --mid:#f59e0b; --high:#ef4444; --accent:#38bdf8; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:system-ui,Segoe UI,Arial,sans-serif; background:var(--bg); color:var(--text); }
+  header { padding:18px 28px; border-bottom:1px solid #334155; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+  h1 { margin:0; font-size:1.5rem; }
+  .tag { color:var(--muted); font-size:.95rem; margin-top:4px; }
+  .controls { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  button { background:var(--accent); color:#04202e; border:0; padding:10px 16px; border-radius:8px; font-weight:700; cursor:pointer; }
+  button.danger { background:var(--high); color:#fff; }
+  label { color:var(--muted); cursor:pointer; }
+  main { padding:20px 28px; display:grid; gap:20px; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; }
+  .card { background:var(--card); border-radius:12px; padding:16px 20px; }
+  .card .n { font-size:2.2rem; font-weight:800; }
+  .card .l { color:var(--muted); }
+  .charts { display:grid; grid-template-columns:2fr 1fr; gap:16px; }
+  .charts .card { height:280px; }
+  .panel { background:var(--card); border-radius:12px; padding:8px 8px 16px; overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; }
+  th { text-align:left; color:var(--muted); font-weight:600; padding:10px 12px; }
+  td { padding:10px 12px; border-top:1px solid #334155; }
+  tr.main { cursor:pointer; }
+  tr.main:hover { background:#273449; }
+  .badge { padding:3px 12px; border-radius:999px; font-weight:700; font-size:.85rem; color:#04110a; }
+  .Low { background:var(--low); } .Medium { background:var(--mid); } .High { background:var(--high); color:#fff; }
+  tr.detail td { background:#16213a; color:#cbd5e1; }
+  tr.detail ul { margin:4px 0 4px 18px; padding:0; }
+  tbody.High tr.main { animation:flash 1.4s ease-out; }
+  @keyframes flash { 0%{background:rgba(239,68,68,.55)} 100%{background:transparent} }
+  .hint { color:var(--muted); font-size:.85rem; padding:6px 12px; }
+  @media (max-width:800px){ .charts{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Common Denominator</h1>
+    <div class="tag">Real-time fraud detection that explains itself in plain words</div>
+  </div>
+  <div class="controls">
+    <label><input type="checkbox" id="flagOnly"> Show flagged only</label>
+    <button class="danger" onclick="trigger('fraud')">Trigger fraud scenario</button>
+    <button onclick="trigger('burst')">Trigger rapid-transfer burst</button>
+  </div>
+</header>
+
+<main>
+  <div class="cards">
+    <div class="card"><div class="n" id="cTotal">0</div><div class="l">Transactions monitored</div></div>
+    <div class="card"><div class="n" id="cFlag" style="color:var(--mid)">0</div><div class="l">Flagged (Medium + High)</div></div>
+    <div class="card"><div class="n" id="cHigh" style="color:var(--high)">0</div><div class="l">High risk</div></div>
+  </div>
+
+  <div class="charts">
+    <div class="card"><canvas id="lineChart"></canvas></div>
+    <div class="card"><canvas id="donutChart"></canvas></div>
+  </div>
+
+  <div class="panel">
+    <div class="hint">Click any row to see why it was scored that way. (Synthetic data for demonstration.)</div>
+    <table id="tbl">
+      <thead><tr><th>#</th><th>User</th><th>Amount</th><th>Payee</th><th>Hour</th><th>Location</th><th>Score</th><th>Risk</th></tr></thead>
+    </table>
+  </div>
+</main>
+
+<script>
+const counts = { Low:0, Medium:0, High:0 };
+const MAX_ROWS = 60, MAX_POINTS = 30;
+const tbl = document.getElementById('tbl');
+const thead = tbl.querySelector('thead');
+const flagOnly = document.getElementById('flagOnly');
+
+// ----- Charts (skipped gracefully if Chart.js could not load) -----
+let line, donut;
+if (window.Chart) {
+  Chart.defaults.color = '#94a3b8';
+  line = new Chart(document.getElementById('lineChart'), {
+    type: 'line',
+    data: { labels: [], datasets: [{ label: 'Risk score (latest transactions)', data: [],
+            borderColor: '#38bdf8', backgroundColor: 'rgba(56,189,248,.15)', fill: true, tension: .3 }] },
+    options: { maintainAspectRatio: false, animation: false, scales: { y: { min: 0, max: 100 } } }
+  });
+  donut = new Chart(document.getElementById('donutChart'), {
+    type: 'doughnut',
+    data: { labels: ['Low','Medium','High'],
+            datasets: [{ data: [0,0,0], backgroundColor: ['#22c55e','#f59e0b','#ef4444'], borderWidth: 0 }] },
+    options: { maintainAspectRatio: false, animation: false }
+  });
+}
+
+function applyFilter(tb) {
+  tb.style.display = (flagOnly.checked && tb.dataset.level === 'Low') ? 'none' : '';
+}
+flagOnly.addEventListener('change', () => document.querySelectorAll('tbody.txn').forEach(applyFilter));
+
+function addRow(t) {
+  counts[t.level]++;
+  document.getElementById('cTotal').textContent = counts.Low + counts.Medium + counts.High;
+  document.getElementById('cFlag').textContent = counts.Medium + counts.High;
+  document.getElementById('cHigh').textContent = counts.High;
+
+  const tb = document.createElement('tbody');
+  tb.className = 'txn ' + t.level;
+  tb.dataset.level = t.level;
+  tb.innerHTML = `
+    <tr class="main">
+      <td>${t.id}</td><td>${t.user}</td><td>₹${t.amount.toLocaleString('en-IN')}</td>
+      <td>${t.payee}</td><td>${String(t.hour).padStart(2,'0')}:00</td><td>${t.location}</td>
+      <td><b>${t.score}</b></td><td><span class="badge ${t.level}">${t.level}</span></td>
+    </tr>
+    <tr class="detail" style="display:none"><td colspan="8">
+      <b>Why this score?</b><ul>${t.reasons.map(r => `<li>${r}</li>`).join('')}</ul>
+    </td></tr>`;
+  tb.querySelector('.main').addEventListener('click', () => {
+    const d = tb.querySelector('.detail');
+    d.style.display = d.style.display === 'none' ? '' : 'none';
+  });
+  thead.after(tb);
+  applyFilter(tb);
+
+  const all = tbl.querySelectorAll('tbody.txn');
+  if (all.length > MAX_ROWS) all[all.length - 1].remove();
+
+  if (line) {
+    line.data.labels.push('#' + t.id);
+    line.data.datasets[0].data.push(t.score);
+    if (line.data.labels.length > MAX_POINTS) { line.data.labels.shift(); line.data.datasets[0].data.shift(); }
+    line.update();
+    donut.data.datasets[0].data = [counts.Low, counts.Medium, counts.High];
+    donut.update();
+  }
+}
+
+function trigger(kind) { fetch('/trigger/' + kind, { method: 'POST' }); }
+
+const source = new EventSource('/stream');
+source.onmessage = e => addRow(JSON.parse(e.data));
+</script>
+</body>
+</html>
