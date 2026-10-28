@@ -9,55 +9,86 @@
   :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --muted:#94a3b8;
           --low:#22c55e; --mid:#f59e0b; --high:#ef4444; --accent:#38bdf8; }
   * { box-sizing:border-box; }
-  body { margin:0; font-family:system-ui,Segoe UI,Arial,sans-serif; background:var(--bg); color:var(--text); }
+  body { margin:0; font-family:"Segoe UI","Nirmala UI",system-ui,Arial,sans-serif; background:var(--bg); color:var(--text); }
   header { padding:18px 28px; border-bottom:1px solid #334155; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
   h1 { margin:0; font-size:1.5rem; }
+  h3 { margin:0 0 12px; font-size:1.05rem; }
   .tag { color:var(--muted); font-size:.95rem; margin-top:4px; }
   .controls { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
   button { background:var(--accent); color:#04202e; border:0; padding:10px 16px; border-radius:8px; font-weight:700; cursor:pointer; }
   button.danger { background:var(--high); color:#fff; }
+  select, input[type=number] { background:#0f172a; color:var(--text); border:1px solid #475569; border-radius:8px; padding:9px 10px; font-size:.95rem; }
+  header select { background:var(--card); }
   label { color:var(--muted); cursor:pointer; }
   main { padding:20px 28px; display:grid; gap:20px; }
-  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:16px; }
   .card { background:var(--card); border-radius:12px; padding:16px 20px; }
-  .card .n { font-size:2.2rem; font-weight:800; }
+  .card .n { font-size:2rem; font-weight:800; }
   .card .l { color:var(--muted); }
   .charts { display:grid; grid-template-columns:2fr 1fr; gap:16px; }
   .charts .card { height:280px; }
+  .split { display:grid; grid-template-columns:3fr 1fr; gap:16px; align-items:start; }
   .panel { background:var(--card); border-radius:12px; padding:8px 8px 16px; overflow-x:auto; }
+  .side { padding:16px; }
   table { width:100%; border-collapse:collapse; }
   th { text-align:left; color:var(--muted); font-weight:600; padding:10px 12px; }
   td { padding:10px 12px; border-top:1px solid #334155; }
   tr.main { cursor:pointer; }
   tr.main:hover { background:#273449; }
-  .badge { padding:3px 12px; border-radius:999px; font-weight:700; font-size:.85rem; color:#04110a; }
+  .badge { padding:3px 12px; border-radius:999px; font-weight:700; font-size:.85rem; color:#04110a; white-space:nowrap; }
   .Low { background:var(--low); } .Medium { background:var(--mid); } .High { background:var(--high); color:#fff; }
   tr.detail td { background:#16213a; color:#cbd5e1; }
-  tr.detail ul { margin:4px 0 4px 18px; padding:0; }
-  tbody.High tr.main { animation:flash 1.4s ease-out; }
+  tr.detail ul, #checkResult ul { margin:6px 0 4px 18px; padding:0; }
+  tbody.High.fresh tr.main { animation:flash 1.4s ease-out; }
   @keyframes flash { 0%{background:rgba(239,68,68,.55)} 100%{background:transparent} }
   .hint { color:var(--muted); font-size:.85rem; padding:6px 12px; }
-  @media (max-width:800px){ .charts{grid-template-columns:1fr;} }
+  .muted { color:var(--muted); }
+  .quick button { padding:5px 10px; font-size:.8rem; margin-right:6px; }
+  .acts { margin-top:10px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .acts button { padding:6px 12px; font-size:.85rem; }
+  .alertb { background:var(--mid); color:#1f1300; }
+  .blockb { background:var(--high); color:#fff; }
+  .safeb  { background:var(--low); color:#04110a; }
+  .status { font-weight:700; font-size:.85rem; color:var(--accent); }
+  .status.block { color:var(--high); } .status.alert { color:var(--mid); } .status.safe { color:var(--low); }
+  .checker { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; align-items:end; }
+  .checker label { display:flex; flex-direction:column; gap:4px; font-size:.85rem; }
+  .checker .chk { flex-direction:row; align-items:center; gap:8px; padding-bottom:10px; }
+  #checkResult { margin-top:14px; }
+  #checkResult .big { font-size:1.6rem; font-weight:800; }
+  #checkResult .err { color:var(--high); }
+  .sms { background:#0b1220; border:1px solid #334155; border-radius:14px 14px 14px 4px; padding:10px 12px; margin-bottom:10px; font-size:.88rem; line-height:1.4; animation:pop .4s ease-out; }
+  .sms small { display:block; color:var(--muted); margin-top:4px; }
+  @keyframes pop { from{transform:scale(.95);opacity:0} to{transform:scale(1);opacity:1} }
+  .empty { color:var(--muted); font-size:.9rem; }
+  @media (max-width:900px){ .charts,.split{grid-template-columns:1fr;} }
 </style>
 </head>
 <body>
 <header>
   <div>
     <h1>Common Denominator</h1>
-    <div class="tag">Real-time fraud detection that explains itself in plain words</div>
+    <div class="tag" data-i18n="tagline"></div>
   </div>
   <div class="controls">
-    <label><input type="checkbox" id="flagOnly"> Show flagged only</label>
-    <button class="danger" onclick="trigger('fraud')">Trigger fraud scenario</button>
-    <button onclick="trigger('burst')">Trigger rapid-transfer burst</button>
+    <select id="lang" aria-label="Language">
+      <option value="en">English</option>
+      <option value="hi">हिन्दी</option>
+      <option value="kn">ಕನ್ನಡ</option>
+    </select>
+    <label><input type="checkbox" id="flagOnly"> <span data-i18n="flag_only"></span></label>
+    <button class="danger" onclick="trigger('fraud')" data-i18n="btn_fraud"></button>
+    <button onclick="trigger('burst')" data-i18n="btn_burst"></button>
   </div>
 </header>
 
 <main>
   <div class="cards">
-    <div class="card"><div class="n" id="cTotal">0</div><div class="l">Transactions monitored</div></div>
-    <div class="card"><div class="n" id="cFlag" style="color:var(--mid)">0</div><div class="l">Flagged (Medium + High)</div></div>
-    <div class="card"><div class="n" id="cHigh" style="color:var(--high)">0</div><div class="l">High risk</div></div>
+    <div class="card"><div class="n" id="cTotal">0</div><div class="l" data-i18n="c_total"></div></div>
+    <div class="card"><div class="n" id="cFlag" style="color:var(--mid)">0</div><div class="l" data-i18n="c_flag"></div></div>
+    <div class="card"><div class="n" id="cHigh" style="color:var(--high)">0</div><div class="l" data-i18n="c_high"></div></div>
+    <div class="card"><div class="n" id="cAtRisk" style="color:var(--high)">₹0</div><div class="l" data-i18n="c_atrisk"></div></div>
+    <div class="card"><div class="n" id="cSaved" style="color:var(--low)">₹0</div><div class="l" data-i18n="c_saved"></div></div>
   </div>
 
   <div class="charts">
@@ -65,71 +96,292 @@
     <div class="card"><canvas id="donutChart"></canvas></div>
   </div>
 
-  <div class="panel">
-    <div class="hint">Click any row to see why it was scored that way. (Synthetic data for demonstration.)</div>
-    <table id="tbl">
-      <thead><tr><th>#</th><th>User</th><th>Amount</th><th>Payee</th><th>Hour</th><th>Location</th><th>Score</th><th>Risk</th></tr></thead>
-    </table>
+  <div class="card">
+    <h3 data-i18n="chk_title"></h3>
+    <form id="checkForm" class="checker">
+      <label><span data-i18n="f_user"></span><select id="cUser"></select></label>
+      <label><span data-i18n="f_amount"></span><input id="cAmount" type="number" min="1" value="15000" required></label>
+      <label><span data-i18n="f_hour"></span><input id="cHour" type="number" min="0" max="23" value="2" required></label>
+      <label><span data-i18n="f_loc"></span><select id="cLoc"></select></label>
+      <label class="chk"><input id="cNew" type="checkbox" checked> <span data-i18n="f_new"></span></label>
+      <button type="submit" data-i18n="f_btn"></button>
+    </form>
+    <div id="checkResult"></div>
+  </div>
+
+  <div class="split">
+    <div class="panel">
+      <div class="hint" data-i18n="hint"></div>
+      <table id="tbl">
+        <thead><tr>
+          <th>#</th><th data-i18n="h_user"></th><th data-i18n="h_amount"></th><th data-i18n="h_payee"></th>
+          <th data-i18n="h_hour"></th><th data-i18n="h_loc"></th><th data-i18n="h_score"></th>
+          <th data-i18n="h_risk"></th><th data-i18n="h_action"></th>
+        </tr></thead>
+      </table>
+    </div>
+    <div class="panel side">
+      <h3 data-i18n="alerts_title"></h3>
+      <div id="alerts"></div>
+    </div>
   </div>
 </main>
 
 <script>
-const counts = { Low:0, Medium:0, High:0 };
-const MAX_ROWS = 60, MAX_POINTS = 30;
+// ---------------- Translations ----------------
+const I18N = {
+  en: {
+    tagline: "Real-time fraud detection that explains itself in plain words",
+    flag_only: "Show flagged only", btn_fraud: "Trigger fraud scenario", btn_burst: "Trigger rapid-transfer burst",
+    c_total: "Transactions monitored", c_flag: "Flagged (Medium + High)", c_high: "High risk",
+    c_atrisk: "Amount flagged (High risk)", c_saved: "Money protected (blocked)",
+    hint: "Click any row to see why it was scored that way. (Synthetic data for demonstration.)",
+    h_user: "User", h_amount: "Amount", h_payee: "Payee", h_hour: "Hour", h_loc: "Location",
+    h_score: "Score", h_risk: "Risk", h_action: "Action",
+    lv_Low: "Low", lv_Medium: "Medium", lv_High: "High",
+    why: "Why this score?", score_break: "rules {r} · ML {m} · final {f}",
+    act_alert: "Alert customer", act_block: "Block", act_safe: "Mark safe",
+    st_alert: "Alert sent", st_block: "Blocked", st_safe: "Marked safe",
+    risk_chart: "Risk score (latest transactions)",
+    alerts_title: "Family alerts (simulated SMS)", no_alerts: "No alerts yet.",
+    sms: "Alert for {user}'s family: ₹{amount} sent to {payee} at {hour}:00. Reply YES to approve or NO to block.",
+    chk_title: "Check a transaction", f_user: "User", f_amount: "Amount (₹)", f_hour: "Hour (0-23)",
+    f_loc: "Location", f_new: "New payee", f_btn: "Score it",
+    r: {
+      amount: "Amount ₹{amount} is {ratio}x {user}'s usual spend (₹{avg}).",
+      odd_hour: "Made at an unusual hour ({hour}:00 AM).",
+      new_payee: "First-ever payment to {payee}.",
+      new_payee_manual: "First-ever payment to a new payee.",
+      location: "Made from {location}, but {user} usually transacts from {home}.",
+      velocity: "{count} transfers in the last 2 minutes.",
+      normal: "Matches this user's normal behaviour.",
+      ml: "ML model estimates a {pct}% chance this is fraud."
+    }
+  },
+  hi: {
+    tagline: "रियल-टाइम धोखाधड़ी की पहचान, जो कारण सरल भाषा में खुद बताती है",
+    flag_only: "केवल संदिग्ध दिखाएँ", btn_fraud: "धोखाधड़ी परिदृश्य चलाएँ", btn_burst: "तेज़ ट्रांसफ़र बर्स्ट चलाएँ",
+    c_total: "निगरानी में लेन-देन", c_flag: "संदिग्ध (मध्यम + उच्च)", c_high: "उच्च जोखिम",
+    c_atrisk: "चिह्नित राशि (उच्च जोखिम)", c_saved: "सुरक्षित की गई राशि (ब्लॉक)",
+    hint: "कारण देखने के लिए किसी भी पंक्ति पर क्लिक करें। (प्रदर्शन हेतु कृत्रिम डेटा)",
+    h_user: "उपयोगकर्ता", h_amount: "राशि", h_payee: "प्राप्तकर्ता", h_hour: "समय", h_loc: "स्थान",
+    h_score: "स्कोर", h_risk: "जोखिम", h_action: "कार्रवाई",
+    lv_Low: "कम", lv_Medium: "मध्यम", lv_High: "उच्च",
+    why: "यह स्कोर क्यों?", score_break: "नियम {r} · ML {m} · अंतिम {f}",
+    act_alert: "ग्राहक को अलर्ट करें", act_block: "ब्लॉक करें", act_safe: "सुरक्षित चिह्नित करें",
+    st_alert: "अलर्ट भेजा गया", st_block: "ब्लॉक किया गया", st_safe: "सुरक्षित चिह्नित",
+    risk_chart: "जोखिम स्कोर (नवीनतम लेन-देन)",
+    alerts_title: "परिवार अलर्ट (सिम्युलेटेड SMS)", no_alerts: "अभी कोई अलर्ट नहीं।",
+    sms: "{user} के परिवार के लिए अलर्ट: {payee} को {hour}:00 बजे ₹{amount} भेजे गए। मंज़ूर करने के लिए YES, रोकने के लिए NO भेजें।",
+    chk_title: "लेन-देन जाँचें", f_user: "उपयोगकर्ता", f_amount: "राशि (₹)", f_hour: "समय (0-23)",
+    f_loc: "स्थान", f_new: "नया प्राप्तकर्ता", f_btn: "स्कोर करें",
+    r: {
+      amount: "राशि ₹{amount} है, जो {user} के सामान्य खर्च (₹{avg}) से {ratio} गुना है।",
+      odd_hour: "असामान्य समय पर किया गया ({hour}:00 AM)।",
+      new_payee: "{payee} को पहली बार भुगतान।",
+      new_payee_manual: "नए प्राप्तकर्ता को पहली बार भुगतान।",
+      location: "यह {location} से किया गया, जबकि {user} आमतौर पर {home} से लेन-देन करते हैं।",
+      velocity: "पिछले 2 मिनट में {count} ट्रांसफ़र।",
+      normal: "यह इस उपयोगकर्ता के सामान्य व्यवहार से मेल खाता है।",
+      ml: "ML मॉडल के अनुसार इसके धोखाधड़ी होने की संभावना {pct}% है।"
+    }
+  },
+  kn: {
+    tagline: "ನೈಜ-ಸಮಯದ ವಂಚನೆ ಪತ್ತೆ, ಕಾರಣವನ್ನು ಸರಳ ಭಾಷೆಯಲ್ಲಿ ತಾನೇ ವಿವರಿಸುತ್ತದೆ",
+    flag_only: "ಅನುಮಾನಾಸ್ಪದ ಮಾತ್ರ ತೋರಿಸಿ", btn_fraud: "ವಂಚನೆ ಸನ್ನಿವೇಶ ಪ್ರಾರಂಭಿಸಿ", btn_burst: "ತ್ವರಿತ ವರ್ಗಾವಣೆ ಸರಣಿ ಪ್ರಾರಂಭಿಸಿ",
+    c_total: "ಪರಿಶೀಲನೆಯಲ್ಲಿರುವ ವಹಿವಾಟುಗಳು", c_flag: "ಅನುಮಾನಾಸ್ಪದ (ಮಧ್ಯಮ + ಹೆಚ್ಚು)", c_high: "ಹೆಚ್ಚಿನ ಅಪಾಯ",
+    c_atrisk: "ಗುರುತಿಸಿದ ಮೊತ್ತ (ಹೆಚ್ಚಿನ ಅಪಾಯ)", c_saved: "ರಕ್ಷಿಸಿದ ಮೊತ್ತ (ತಡೆದದ್ದು)",
+    hint: "ಕಾರಣ ನೋಡಲು ಯಾವುದೇ ಸಾಲನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ. (ಪ್ರದರ್ಶನಕ್ಕಾಗಿ ಕೃತಕ ಡೇಟಾ)",
+    h_user: "ಬಳಕೆದಾರ", h_amount: "ಮೊತ್ತ", h_payee: "ಸ್ವೀಕರಿಸುವವರು", h_hour: "ಸಮಯ", h_loc: "ಸ್ಥಳ",
+    h_score: "ಸ್ಕೋರ್", h_risk: "ಅಪಾಯ", h_action: "ಕ್ರಮ",
+    lv_Low: "ಕಡಿಮೆ", lv_Medium: "ಮಧ್ಯಮ", lv_High: "ಹೆಚ್ಚು",
+    why: "ಈ ಸ್ಕೋರ್ ಏಕೆ?", score_break: "ನಿಯಮಗಳು {r} · ML {m} · ಅಂತಿಮ {f}",
+    act_alert: "ಗ್ರಾಹಕರಿಗೆ ಎಚ್ಚರಿಕೆ ನೀಡಿ", act_block: "ತಡೆಯಿರಿ", act_safe: "ಸುರಕ್ಷಿತ ಎಂದು ಗುರುತಿಸಿ",
+    st_alert: "ಎಚ್ಚರಿಕೆ ಕಳುಹಿಸಲಾಗಿದೆ", st_block: "ತಡೆಯಲಾಗಿದೆ", st_safe: "ಸುರಕ್ಷಿತ ಎಂದು ಗುರುತಿಸಲಾಗಿದೆ",
+    risk_chart: "ಅಪಾಯ ಸ್ಕೋರ್ (ಇತ್ತೀಚಿನ ವಹಿವಾಟುಗಳು)",
+    alerts_title: "ಕುಟುಂಬ ಎಚ್ಚರಿಕೆಗಳು (ಸಿಮ್ಯುಲೇಟೆಡ್ SMS)", no_alerts: "ಇನ್ನೂ ಯಾವುದೇ ಎಚ್ಚರಿಕೆ ಇಲ್ಲ.",
+    sms: "{user} ಅವರ ಕುಟುಂಬಕ್ಕೆ ಎಚ್ಚರಿಕೆ: {payee} ಗೆ {hour}:00 ಕ್ಕೆ ₹{amount} ಕಳುಹಿಸಲಾಗಿದೆ. ಅನುಮೋದಿಸಲು YES, ತಡೆಯಲು NO ಎಂದು ಉತ್ತರಿಸಿ.",
+    chk_title: "ವಹಿವಾಟನ್ನು ಪರಿಶೀಲಿಸಿ", f_user: "ಬಳಕೆದಾರ", f_amount: "ಮೊತ್ತ (₹)", f_hour: "ಸಮಯ (0-23)",
+    f_loc: "ಸ್ಥಳ", f_new: "ಹೊಸ ಸ್ವೀಕರಿಸುವವರು", f_btn: "ಸ್ಕೋರ್ ಮಾಡಿ",
+    r: {
+      amount: "ಮೊತ್ತ ₹{amount}, ಇದು {user} ಅವರ ಸಾಮಾನ್ಯ ಖರ್ಚಿಗಿಂತ (₹{avg}) {ratio} ಪಟ್ಟು ಹೆಚ್ಚು.",
+      odd_hour: "ಅಸಾಮಾನ್ಯ ಸಮಯದಲ್ಲಿ ಮಾಡಲಾಗಿದೆ ({hour}:00 AM).",
+      new_payee: "{payee} ಗೆ ಮೊದಲ ಬಾರಿ ಪಾವತಿ.",
+      new_payee_manual: "ಹೊಸ ಸ್ವೀಕರಿಸುವವರಿಗೆ ಮೊದಲ ಬಾರಿ ಪಾವತಿ.",
+      location: "ಇದನ್ನು {location} ನಿಂದ ಮಾಡಲಾಗಿದೆ, ಆದರೆ {user} ಸಾಮಾನ್ಯವಾಗಿ {home} ನಿಂದ ವಹಿವಾಟು ಮಾಡುತ್ತಾರೆ.",
+      velocity: "ಕಳೆದ 2 ನಿಮಿಷಗಳಲ್ಲಿ {count} ವರ್ಗಾವಣೆಗಳು.",
+      normal: "ಇದು ಈ ಬಳಕೆದಾರರ ಸಾಮಾನ್ಯ ವರ್ತನೆಗೆ ಹೊಂದಿಕೆಯಾಗುತ್ತದೆ.",
+      ml: "ML ಮಾದರಿಯ ಅಂದಾಜಿನ ಪ್ರಕಾರ ಇದು ವಂಚನೆಯಾಗುವ ಸಾಧ್ಯತೆ {pct}%."
+    }
+  }
+};
+
+let lang = 'en';
+const tr = k => I18N[lang][k];
+const fmt = (s, p) => s.replace(/\{(\w+)\}/g, (m, k) => (p[k] !== undefined ? p[k] : m));
+const num = n => Number(n).toLocaleString('en-IN');
+const inr = n => '₹' + num(n);
+
+function reasonsFor(t) {
+  return (t.codes || []).map(c => {
+    // Manual "check a transaction" results have id 0 and a generic payee
+    const key = (c.c === 'new_payee' && t.id === 0) ? 'new_payee_manual' : c.c;
+    return fmt(I18N[lang].r[key], { user: t.user, amount: num(t.amount), avg: num(t.avg), payee: t.payee,
+                                    location: t.location, home: t.home, hour: t.hour,
+                                    ratio: c.ratio, count: c.count, pct: c.pct });
+  });
+}
+
+// ---------------- State ----------------
+const counts = { Low: 0, Medium: 0, High: 0 };
+let atRisk = 0, saved = 0;
+const rows = [];      // {t, tb, status: {act, time} | null, open}
+const alerts = [];    // High-risk transactions that triggered a family alert
+let lastCheck = null;
+const MAX_ROWS = 60, MAX_POINTS = 30, MAX_ALERTS = 6;
+
 const tbl = document.getElementById('tbl');
 const thead = tbl.querySelector('thead');
 const flagOnly = document.getElementById('flagOnly');
 
-// ----- Charts (skipped gracefully if Chart.js could not load) -----
+// ---------------- Charts ----------------
 let line, donut;
 if (window.Chart) {
   Chart.defaults.color = '#94a3b8';
   line = new Chart(document.getElementById('lineChart'), {
     type: 'line',
-    data: { labels: [], datasets: [{ label: 'Risk score (latest transactions)', data: [],
-            borderColor: '#38bdf8', backgroundColor: 'rgba(56,189,248,.15)', fill: true, tension: .3 }] },
+    data: { labels: [], datasets: [{ label: '', data: [], borderColor: '#38bdf8',
+            backgroundColor: 'rgba(56,189,248,.15)', fill: true, tension: .3 }] },
     options: { maintainAspectRatio: false, animation: false, scales: { y: { min: 0, max: 100 } } }
   });
   donut = new Chart(document.getElementById('donutChart'), {
     type: 'doughnut',
-    data: { labels: ['Low','Medium','High'],
-            datasets: [{ data: [0,0,0], backgroundColor: ['#22c55e','#f59e0b','#ef4444'], borderWidth: 0 }] },
+    data: { labels: ['', '', ''], datasets: [{ data: [0, 0, 0],
+            backgroundColor: ['#22c55e', '#f59e0b', '#ef4444'], borderWidth: 0 }] },
     options: { maintainAspectRatio: false, animation: false }
   });
+}
+
+// ---------------- Rendering ----------------
+function updateCards() {
+  document.getElementById('cTotal').textContent = counts.Low + counts.Medium + counts.High;
+  document.getElementById('cFlag').textContent = counts.Medium + counts.High;
+  document.getElementById('cHigh').textContent = counts.High;
+  document.getElementById('cAtRisk').textContent = inr(atRisk);
+  document.getElementById('cSaved').textContent = inr(saved);
 }
 
 function applyFilter(tb) {
   tb.style.display = (flagOnly.checked && tb.dataset.level === 'Low') ? 'none' : '';
 }
-flagOnly.addEventListener('change', () => document.querySelectorAll('tbody.txn').forEach(applyFilter));
+
+function statusHTML(r) {
+  return r.status ? `<span class="status ${r.status.act}">${tr('st_' + r.status.act)} · ${r.status.time}</span>` : '';
+}
+
+function quickCell(r) {
+  if (r.t.level === 'Low') return '—';
+  if (r.status) return statusHTML(r);
+  return `<span class="quick"><button class="blockb" data-a="block">${tr('act_block')}</button>` +
+         `<button class="alertb" data-a="alert">${tr('act_alert')}</button></span>`;
+}
+
+async function doAction(r, act) {
+  try {
+    const res = await fetch('/action', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                         body: JSON.stringify({ id: r.t.id, action: act }) });
+    const out = await res.json();
+    if (!out.ok) return;
+    if (r.status && r.status.act === 'block') saved -= r.t.amount;   // changed their mind
+    if (act === 'block') saved += r.t.amount;
+    r.status = { act, time: out.time };
+    updateCards();
+    render(r);
+  } catch (e) { console.error(e); }
+}
+
+function render(r) {
+  const t = r.t;
+  const flagged = t.level !== 'Low';
+  r.tb.innerHTML = `
+    <tr class="main">
+      <td>${t.id}</td><td>${t.user}</td><td>${inr(t.amount)}</td><td>${t.payee}</td>
+      <td>${String(t.hour).padStart(2, '0')}:00</td><td>${t.location}</td>
+      <td><b>${t.score}</b></td>
+      <td><span class="badge ${t.level}">${tr('lv_' + t.level)}</span></td>
+      <td>${quickCell(r)}</td>
+    </tr>
+    <tr class="detail" style="display:${r.open ? '' : 'none'}"><td colspan="9">
+      <b>${tr('why')}</b> <span class="muted">(${fmt(tr('score_break'), { r: t.rule_score, m: t.ml_score, f: t.score })})</span>
+      <ul>${reasonsFor(t).map(x => `<li>${x}</li>`).join('')}</ul>
+      ${flagged ? `<div class="acts">
+        <button class="alertb" data-a="alert">${tr('act_alert')}</button>
+        <button class="blockb" data-a="block">${tr('act_block')}</button>
+        <button class="safeb" data-a="safe">${tr('act_safe')}</button>
+        ${statusHTML(r)}
+      </div>` : ''}
+    </td></tr>`;
+  r.tb.querySelector('.main').addEventListener('click', () => {
+    r.open = !r.open;
+    r.tb.querySelector('.detail').style.display = r.open ? '' : 'none';
+  });
+  r.tb.querySelectorAll('button[data-a]').forEach(b => b.addEventListener('click', e => {
+    e.stopPropagation();
+    doAction(r, b.dataset.a);
+  }));
+}
+
+function renderAlerts() {
+  const box = document.getElementById('alerts');
+  if (!alerts.length) { box.innerHTML = `<div class="empty">${tr('no_alerts')}</div>`; return; }
+  box.innerHTML = alerts.map(t =>
+    `<div class="sms">${fmt(tr('sms'), { user: t.user, amount: num(t.amount), payee: t.payee, hour: t.hour })}` +
+    `<small>SMS · #${t.id}</small></div>`).join('');
+}
+
+function renderCheck() {
+  const box = document.getElementById('checkResult');
+  if (!lastCheck) { box.innerHTML = ''; return; }
+  if (lastCheck.error) { box.innerHTML = `<div class="err">${lastCheck.error}</div>`; return; }
+  const t = lastCheck;
+  box.innerHTML = `<span class="big">${t.score}</span> <span class="badge ${t.level}">${tr('lv_' + t.level)}</span>
+    <span class="muted"> (${fmt(tr('score_break'), { r: t.rule_score, m: t.ml_score, f: t.score })})</span>
+    <ul>${reasonsFor(t).map(x => `<li>${x}</li>`).join('')}</ul>`;
+}
+
+function applyLang() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = tr(el.dataset.i18n); });
+  rows.forEach(render);
+  renderAlerts();
+  renderCheck();
+  if (line) {
+    line.data.datasets[0].label = tr('risk_chart');
+    donut.data.labels = [tr('lv_Low'), tr('lv_Medium'), tr('lv_High')];
+    line.update(); donut.update();
+  }
+}
 
 function addRow(t) {
   counts[t.level]++;
-  document.getElementById('cTotal').textContent = counts.Low + counts.Medium + counts.High;
-  document.getElementById('cFlag').textContent = counts.Medium + counts.High;
-  document.getElementById('cHigh').textContent = counts.High;
+  if (t.level === 'High') {
+    atRisk += t.amount;
+    alerts.unshift(t); if (alerts.length > MAX_ALERTS) alerts.pop();
+    renderAlerts();
+  }
+  updateCards();
 
   const tb = document.createElement('tbody');
-  tb.className = 'txn ' + t.level;
+  tb.className = 'txn fresh ' + t.level;
   tb.dataset.level = t.level;
-  tb.innerHTML = `
-    <tr class="main">
-      <td>${t.id}</td><td>${t.user}</td><td>₹${t.amount.toLocaleString('en-IN')}</td>
-      <td>${t.payee}</td><td>${String(t.hour).padStart(2,'0')}:00</td><td>${t.location}</td>
-      <td><b>${t.score}</b></td><td><span class="badge ${t.level}">${t.level}</span></td>
-    </tr>
-    <tr class="detail" style="display:none"><td colspan="8">
-      <b>Why this score?</b><ul>${t.reasons.map(r => `<li>${r}</li>`).join('')}</ul>
-    </td></tr>`;
-  tb.querySelector('.main').addEventListener('click', () => {
-    const d = tb.querySelector('.detail');
-    d.style.display = d.style.display === 'none' ? '' : 'none';
-  });
+  const r = { t, tb, status: null, open: false };
+  rows.unshift(r);
+  render(r);
   thead.after(tb);
   applyFilter(tb);
+  setTimeout(() => tb.classList.remove('fresh'), 1600);
 
-  const all = tbl.querySelectorAll('tbody.txn');
-  if (all.length > MAX_ROWS) all[all.length - 1].remove();
+  if (rows.length > MAX_ROWS) rows.pop().tb.remove();
 
   if (line) {
     line.data.labels.push('#' + t.id);
@@ -141,8 +393,32 @@ function addRow(t) {
   }
 }
 
+// ---------------- Wiring ----------------
+flagOnly.addEventListener('change', () => rows.forEach(r => applyFilter(r.tb)));
+document.getElementById('lang').addEventListener('change', e => { lang = e.target.value; applyLang(); });
 function trigger(kind) { fetch('/trigger/' + kind, { method: 'POST' }); }
 
+// "Check a transaction" form
+let profiles = {};
+fetch('/users').then(r => r.json()).then(d => {
+  profiles = d.users;
+  const u = document.getElementById('cUser'), l = document.getElementById('cLoc');
+  u.innerHTML = Object.keys(d.users).map(n => `<option>${n}</option>`).join('');
+  l.innerHTML = d.locations.map(c => `<option>${c}</option>`).join('');
+  const syncHome = () => { l.value = profiles[u.value].home; };
+  u.addEventListener('change', syncHome); syncHome();
+});
+
+document.getElementById('checkForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const res = await fetch('/check', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user: cUser.value, amount: cAmount.value, hour: cHour.value,
+                           location: cLoc.value, new_payee: cNew.checked }) });
+  lastCheck = await res.json();
+  renderCheck();
+});
+
+applyLang();
 const source = new EventSource('/stream');
 source.onmessage = e => addRow(JSON.parse(e.data));
 </script>
